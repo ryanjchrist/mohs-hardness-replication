@@ -1,0 +1,120 @@
+# Replication configuration (bin edges + 9-model set)
+
+random_seed: 42
+
+bins:
+  # Binary edges: [min, cutoff, max]
+  # Class rule used here: y >= cutoff -> class 1, else class 0
+  binary: [0.991, 5.5, 10.0]
+
+  # Ternary edges: [min, low_max, mid_max, max]
+  # Class rule used here:
+  # - class 0: y <= low_max
+  # - class 1: low_max < y <= mid_max
+  # - class 2: y > mid_max
+  ternary: [0.991, 4.0, 7.0, 10.0]
+
+data_loader:
+  # Expected row counts; used to identify the train vs test CSV automatically.
+  train_rows: 622
+  # Observed in the provided workspace CSV.
+  test_rows: 52
+
+models:
+  - id: 1
+    name: binary_rbf_svc
+    task: binary
+    family: svc
+    multiclass: direct
+    kernel: rbf
+    C: 10
+    gamma: 1
+
+  - id: 2
+    name: ternary_rbf_svc_ovo
+    task: ternary
+    family: svc
+    multiclass: ovo
+    kernel: rbf
+    C: 10
+    gamma: 1
+
+  - id: 3
+    name: binary_rf
+    task: binary
+    family: rf
+    multiclass: direct
+
+  - id: 4
+    name: ternary_rf_multiclass
+    task: ternary
+    family: rf
+    multiclass: direct
+
+  - id: 5
+    name: ternary_rf_ovr_0_vs_12
+    task: ternary
+    family: rf
+    multiclass: ovr
+    positive_class: 0
+
+  - id: 6
+    name: ternary_rf_ovr_1_vs_02
+    task: ternary
+    family: rf
+    multiclass: ovr
+    positive_class: 1
+
+  - id: 7
+    name: ternary_rf_ovr_2_vs_01
+    task: ternary
+    family: rf
+    multiclass: ovr
+    positive_class: 2
+
+  - id: 8
+    name: binary_matern_svc
+    task: binary
+    family: svc
+    multiclass: direct
+    kernel: matern
+    C: 10
+    nu: 2.5
+
+  - id: 9
+    name: ternary_matern_svc_ovo
+    task: ternary
+    family: svc
+    multiclass: ovo
+    kernel: matern
+    C: 1
+    nu: 1
+
+# For Figure 4 ROC plots (binary-vs-OVR for each ternary class), we use the same
+# RBF SVC hyperparameters as `binary_rbf_svc`.
+figure4:
+  svm:
+    kernel: rbf
+    C: 10
+    gamma: 1
+
+ann_extension:
+  enabled: false
+  search:
+    max_candidates: 30
+  candidates:
+    - hidden_layer_sizes: [32]
+      alpha: 1.0e-4
+    - hidden_layer_sizes: [64]
+      alpha: 1.0e-4
+    - hidden_layer_sizes: [64, 32]
+      alpha: 1.0e-4
+    - hidden_layer_sizes: [128, 64]
+      alpha: 1.0e-4
+  mlp_defaults:
+    activation: relu
+    solver: adam
+    learning_rate: adaptive
+    early_stopping: true
+    max_iter: 2500
+
